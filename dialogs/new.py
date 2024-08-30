@@ -1,4 +1,5 @@
 import asyncio
+import copy
 import datetime
 import pickle
 from itertools import chain
@@ -32,6 +33,7 @@ async def getter(dialog_manager: DialogManager, event_from_user: User, bot: Bot,
     data = dialog_manager.dialog_data
     count = data.get('count', 1)
     data['count'] = count
+    data['step1'] = data.get('step1', [])
 
     question = questions[count]['q']
     answers = questions[count].get('a', [])
@@ -51,14 +53,19 @@ async def result_getter(dialog_manager: DialogManager, event_from_user: User, bo
     data = dialog_manager.dialog_data
     text = ''
     for q_num in questions:
+        print(q_num, questions[q_num].get('q'))
         text += f'{q_num}. {questions[q_num].get("q")}\n{data.get(str(q_num))}\n\n'
     return {'text': text}
 
 
-async def next_q(dialog_manager):
+async def next_q(dialog_manager, change_count=0):
+
     data = dialog_manager.dialog_data
     count = data.get('count', 0)
+    logger.debug(f'next_q: count: {count}, {change_count}')
     count += 1
+    if change_count:
+        count = change_count
     data.update(count=count)
     if count not in questions:
         logger.debug('Вопросы закончились')
@@ -73,12 +80,18 @@ async def prev_q(callback: CallbackQuery, widget: Button, dialog_manager: Dialog
     data.update(count=count)
 
 
-async def text_input(message: Message, widget: ManagedTextInput, dialog_manager: DialogManager, text: str) -> None:
-    data = dialog_manager.dialog_data
-    count = data.get('count', 0)
-    field = str(count)
-    data[field] = text
-    await next_q(dialog_manager)
+# async def text_input(message: Message, widget: ManagedTextInput, dialog_manager: DialogManager, text: str) -> None:
+#     data = dialog_manager.dialog_data
+#     count = data.get('count', 0)
+#     field = str(count)
+#     data[field] = text
+#     logger.debug(f'Вопрос {count}. Введено {text}')
+#     if count == 7 and text in ['Да', 'Нет']:
+#         step1 = [data[4], data[5], data[6], data[7]]
+#         data['step1'] = data['step1'].append(step1)
+#         if text == 'Да':
+#             data['count'] = 3
+#     await next_q(dialog_manager)
 
 
 async def item_select(callback: CallbackQuery, widget: Select,
@@ -86,14 +99,27 @@ async def item_select(callback: CallbackQuery, widget: Select,
     data = dialog_manager.dialog_data
     count = data.get('count', 0)
     selected = item_id
-    logger.debug(f'selected: {selected}')
+    logger.debug(f'selected {count}: {selected}')
     data[str(count)] = selected
+    logger.debug(data)
+    if count == 7 and selected in ['Да', 'Нет']:
+        current_step1 = [data['3'], data['4'], data['5'], data['6'], data['7']]
+        logger.debug(f'current_step1: {current_step1}')
+        old_step1 = data['step1']
+        old_step1.append(current_step1)
+        data['step1'] = old_step1
+        if selected == 'Да':
+            data['count'] = 2
+            await next_q(dialog_manager, 2)
     await next_q(dialog_manager)
 
 
 async def check_type(message, dialog_manager):
     print(message.content_type, dialog_manager.dialog_data)
     q_content_type = dialog_manager.dialog_data['q_content_type']
+    count = dialog_manager.dialog_data['count']
+    if not questions[count].get('variable_answer') and q_content_type == ContentType.TEXT:
+        return False
     return q_content_type == message.content_type
 
 
@@ -101,7 +127,7 @@ async def message_handler(
         message: Message,
         widget: MessageInput,
         dialog_manager: DialogManager) -> None:
-    logger.debug(f'Отправлено {message.content_type}')
+    logger.debug(f'Отправлен тип {message.content_type}')
     data = dialog_manager.dialog_data
     count = data.get('count', 0)
     field = str(count)
@@ -116,6 +142,7 @@ async def message_handler(
         data[field] = message.photo[-1].file_id
         file_path = f'{message.from_user.id}_photo_{count}.jpg'
         await message.bot.download(file=message.photo[-1], destination=file_path)
+
 
     await next_q(dialog_manager)
     return

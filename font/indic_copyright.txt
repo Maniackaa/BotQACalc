@@ -106,11 +106,11 @@ License: GPL-2+-BY-Font
  can be found in /usr/share/common-licenses/GPL-2 and 
  /usr/share/common-licenses/GPL-3.
  .
- As a special exception, if you create a document which uses this font,
+ As a special exception, if you create a doc which uses this font,
  and embed this font or unaltered portions of this font into the
- document, this font does not by itself cause the resulting document
+ doc, this font does not by itself cause the resulting doc
  to be covered by the GNU General Public License. This exception does
- not however invalidate any other reasons why the document might be
+ not however invalidate any other reasons why the doc might be
  covered by the GNU General Public License. If you modify this font,
  you may extend this exception to your version of the font, but you
  are not obligated to do so. If you do not wish to do so, delete this

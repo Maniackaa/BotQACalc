@@ -1,52 +1,84 @@
+import datetime
 
 from docx import Document
-from docx.shared import Inches
+from docx.enum.style import WD_STYLE_TYPE
+from docx.oxml import parse_xml
+from docx.oxml.ns import nsdecls
+from docx.shared import Inches, Mm
 
-# document = Document()
-document = Document('template.docx')
+from config.bot_settings import settings, logger
+from database.db import get_price, get_count
 
-document.add_heading('Document Title', 0)
+doc = Document()
 
-p = document.add_paragraph('A plain paragraph having some ')
+# Изменяем поля документа
+section = doc.sections[0]
+
+# Устанавливаем поля (в дюймах)
+section.top_margin = Mm(5)    # Верхнее поле
+section.bottom_margin = Mm(5)  # Нижнее поле
+section.left_margin = Mm(5)    # Левое поле
+section.right_margin = Mm(5)   # Правое поле
+# doc = doc('шаблон расчета.docx')
+doc.add_picture('header.png', width=Mm(200))
+styles = doc.styles
+data = {'count': 8, 'step1': [['Коврик в багажник', 'Luxury 20мм', 'Серый', 'коммент', 'Нет']], 'q_content_type':'text', '1': '1234124124', '2': 'JAC', '3': 'Коврик в багажник', '4': 'Luxury 20мм', '5': 'Серый', '6': 'коммент', '7': 'Нет'}
+for paragraph in doc.paragraphs:
+    if '{date}' in paragraph.text:
+        print(paragraph.text)
+        paragraph.text = paragraph.text.replace("{date}", "new_value")
+
+p = doc.add_paragraph().add_run(text=f'Дата: {datetime.datetime.now(tz=settings.tz).date()}')
+p.bold = True
+p = doc.add_paragraph().add_run(text=f'Телефон клиента: {data["1"]}')
+p.bold = True
+doc.add_paragraph()
+p = doc.add_paragraph().add_run(text=f'Марка автомобиля: {data["2"]}')
+p.bold = True
+
+
+header = ('Комплектация',	'Характеристики', 'Цвет',	'',	'Стоимость',	'Кол-во',	'Итого')
+
+for style in styles:
+    if style.type == style.type.TABLE:
+        doc.add_paragraph('-------------------')
+        doc.add_paragraph(style.name)
+        table = doc.add_table(rows=6, cols=7)
+        table.style = style.name
+        hdr_cells = table.rows[0].cells
+        # Заголовок таблицы
+        for i, cell in enumerate(hdr_cells):
+            hdr_cells[i].text = header[i]
+            cell_font = cell.paragraphs[0].runs[0]
+            cell_font.bold = True
+            # cell._element.get_or_add_tcPr().append(parse_xml(r'<w:shd {} w:fill="A9A9A9"/>'.format(nsdecls('w'))))
+
+        # Заполнение строк таблицы
+        for row_num, step1 in enumerate(data['step1'], 1):
+            logger.debug(f'Ряд {row_num}, {step1}')
+            price = get_price(step1[1])
+            count = get_count(step1[0])
+            total = price * count
+            logger.debug(f'price: {price}, count: {count}, total: {total}')
+
+            row = [step1[0], step1[1], step1[2], '', price, count, total]
+            logger.debug(f'row: {row}')
+            cells = table.rows[row_num].cells
+            for i, cell in enumerate(cells):
+                cell.text = str(row[i])
+
+        p = doc.add_paragraph('-------------------')
+
 p.add_run('bold').bold = True
 p.add_run(' and some ')
 p.add_run('italic.').italic = True
 
-document.add_heading('Heading, level 1', level=1)
-document.add_paragraph('Intense quote', style='Intense Quote')
 
-document.add_paragraph(
-    'first item in unordered list', style='List Bullet'
-)
-document.add_paragraph(
-    'first item in ordered list', style='List Number'
-)
+# doc.add_picture('photo.jpg', width=Inches(6.25))
+# doc.add_page_break()
 
-document.add_picture('photo.jpg', width=Inches(6.25))
+doc.save('demo.docx')
 
-records = (
-    (3, '101', 'Spam'),
-    (7, '422', 'Eggs'),
-    (4, '631', 'Spam, spam, eggs, and spam')
-)
-
-table = document.add_table(rows=1, cols=3)
-hdr_cells = table.rows[0].cells
-hdr_cells[0].text = 'Qty'
-hdr_cells[1].text = 'Id'
-hdr_cells[2].text = 'Desc'
-for qty, id, desc in records:
-    row_cells = table.add_row().cells
-    row_cells[0].text = str(qty)
-    row_cells[1].text = id
-    row_cells[2].text = desc
-
-document.add_page_break()
-
-document.save('demo.docx')
-for paragraph in document.paragraphs:
-    for r in paragraph.runs:
-        print(r.add_text('124'))
 
 # from docx2pdf import convert
 #

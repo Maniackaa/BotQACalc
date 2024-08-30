@@ -31,7 +31,7 @@ Copyright (C) 1999 Arphic Technology Co., Ltd.
 All rights reserved except as specified below.
 
 Everyone is permitted to copy and distribute verbatim copies of this
-license document, but changing it is forbidden.
+license doc, but changing it is forbidden.
 
 Preamble
 

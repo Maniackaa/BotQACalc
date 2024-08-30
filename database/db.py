@@ -81,12 +81,46 @@ if not database_exists(db_url):
 Base.metadata.create_all(engine)
 
 marks = ['Toyota', 'Лада', 'Volkswagen', 'Nissan', 'Kia', 'Hyundai', 'Honda', 'Mutsubishi', 'Mercedes-Benz', 'BMW', 'Mazda', 'Ford', 'Chevrolet', 'Renault', 'Lexus', 'Subaru', 'Audi', 'Skoda', 'Opel', 'Chery', 'УАЗ', 'ЛУАЗ', 'ГАЗ', 'ТагАЗ', 'Suzuki', 'Haval', 'Land Rover', 'Peugeot', 'Daewoo', 'Infiniti', 'Gelly', 'Exeed', 'Volvo', 'Daihatsu', 'Citroen', 'Ssang Yong', 'Porsche', 'Lifan', 'Omoda', 'Jeep', 'ЗАЗ', 'Datsun', 'Great Wall', 'Changan', 'МОСКВИЧ', 'Cadilac', 'Fiat', 'Dodge', 'Mini', 'Genesis', 'ИЖ', 'Jaguar', 'Chrysler', 'Isuzu', 'Evolute', 'FAW', 'Smart', 'Vortex', 'Acura', 'Tesla', 'Hummer', 'JAC', 'SEAT', 'Ravon', 'Lincoln', 'Dongfeng', 'BYD']
+price = {
+    'Platinum 10мм': 10000,
+    'Premium KR 7мм': 10000,
+    'Platinum KR 10мм': 10000,
+    'Brilliance 12мм': 10000,
+    'Prime 7мм': 10000,
+    'Prime 10мм': 10000,
+    'Luxury 20мм': 10000,
+    'Luxury 15мм': 10000,
+}
+colors = ['Черный', 'Темно-серый', 'Коричневый', 'Бежевый', 'Серый', 'Синий']
 questions = {
-        1: {'q': 'Введите телефон клиента', 'a': []},
-        2: {'q': 'Введите модель авто или выберите из вариантов', 'a': marks},
-        3: {'q': 'Пришлите фото', 'q_content_type': ContentType.PHOTO},
-        4: {'q': 'Какие коврики нужны? (выберите или введите свой вариант)',
-            'a': ['Комплект ковриков', 'Передние коврики', 'Коврик в багажник', 'Водительский коврик', 'Задние коврики']
-            },
-
+        1: {'q': 'Введите телефон клиента', 'a': [], 'variable_answer': True},
+        2: {'q': 'Введите модель авто или выберите из вариантов', 'a': marks, 'variable_answer': True},
+        # 3: {'q': 'Пришлите фото', 'q_content_type': ContentType.PHOTO},
+        3: {'q': 'Какие коврики нужны? (выберите или введите свой вариант)', 'variable_answer': True,
+            'a': ['Комплект ковриков', 'Передние коврики', 'Коврик в багажник', 'Водительский коврик', 'Задние коврики']},
+        4: {'q': 'Выберите комплектацию ковриков или введите свой вариант?', 'a': price.keys(), 'variable_answer': True},
+        5: {'q': 'Выберите цвет материала?', 'a': colors},
+        6: {'q': 'Нужен комментарий (если да, укажите)?', 'a': ['Нет'], 'variable_answer': True},
+        7: {'q': 'Добавить еще комлпект', 'a': ['Да', 'Нет']},
     }
+
+
+def get_count(name: str):
+    logger.debug(f'get_count {name}')
+    result = 1
+    values = questions[3]['a']
+    logger.debug(values)
+    if name in [values[1], values[4]]:
+        result = 0.6
+    if name == values[3]:
+        result = 0.3
+    logger.debug(f'Объем материала: {result}')
+    return result
+
+
+def get_price(name: str):
+    result = price.get(name, 0)
+    return result
+
+
+
