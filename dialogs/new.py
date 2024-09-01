@@ -32,7 +32,7 @@ from dialogs.states import StartSG, AddCarSG, NewDialog
 
 async def getter(dialog_manager: DialogManager, event_from_user: User, bot: Bot, event_update: Update, **kwargs):
     data = dialog_manager.dialog_data
-    count = data.get('count', 32)
+    count = data.get('count', 1)
     data['count'] = count
     data['step1'] = data.get('step1', [])
     data['step2'] = data.get('step2', [])
