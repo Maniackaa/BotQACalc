@@ -58,6 +58,13 @@ async def getter(dialog_manager: DialogManager, event_from_user: User, bot: Bot,
         answers = [str(get_yazik_price(data.get('10')))]  # Выберите тип язычка
     if count == 15:  # Введите кол-во перемычек
         answers = [str(get_peremichka_count(data.get('14')))]  # Выберите тип перемычки
+    if count == 30:  # Введите количество комплектов окантовки
+        step1 = data['step1']
+        cant_count = 0
+        for step in step1:
+            cant_count += float(step[3])
+        answers = [cant_count]
+
     result = {'count': count, 'question': question, 'answers': answers, 'width': width, 'q_content_type': q_content_type, 'back': count > 1}
     return result
 
@@ -77,6 +84,18 @@ async def next_q(dialog_manager, change_count=0):
     logger.debug(f'next_q: count: {count}, {change_count}')
     if change_count:
         count = change_count
+
+    if count == 10:  # Выберите тип язычка
+        if data.get('10') == 'Без язычка':
+            count += 3
+
+    if count == 14:  # Выберите тип перемычки
+        if data.get('14') == 'Без перемычки':
+            count += 3
+
+    if count == 18:  # Выберите тип подпятника
+        if data.get('18') == 'Без подпятника':
+            count += 3
 
     if count == 25:  # Выберите тип прострочки окантовки?
         count += 2

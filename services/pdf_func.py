@@ -93,31 +93,31 @@ def format_new_doc(data):
     table = doc.add_table(rows=3, cols=7)
     table.style = 'Table Grid'
     # Заполнение строк таблицы
-    count = data.get('11')
-    price = data.get('12')
+    count = data.get('11', 0)
+    price = data.get('12', 0)
     total = round(float(price) * float(count))
     table_price += total
-    comment = data.get('13')
+    comment = data.get('13', '')
     row = ['Площадка левой ноги', data.get('10'), '', comment, price, count, total]
     cells = table.rows[0].cells
     for i, cell in enumerate(cells):
         cell.text = str(row[i])
 
-    count = data.get('15')
-    price = data.get('16')
+    count = data.get('15', 0)
+    price = data.get('16', 0)
     total = round(float(price) * float(count))
     table_price += total
-    comment = data.get('17')
+    comment = data.get('17', '')
     row = ['Перемычка 2го ряда', data.get('14'), '', comment, price, count, total]
     cells = table.rows[1].cells
     for i, cell in enumerate(cells):
         cell.text = str(row[i])
 
-    count = data.get('19')
-    price = data.get('20')
+    count = data.get('19', 0)
+    price = data.get('20', 0)
     total = round(float(price) * float(count))
     table_price += total
-    comment = data.get('21')
+    comment = data.get('21', '')
     row = ['Подпятник', data.get('18'), '', comment, price, count, total]
     cells = table.rows[2].cells
     for i, cell in enumerate(cells):
@@ -149,7 +149,7 @@ def format_new_doc(data):
     price = data.get('31')
     total = round(float(price) * float(count))
     table_price += total
-    comment = data.get('32')
+    comment = data.get('32', '')
     if data.get('24') == 'Одинарная': #  Выберите тип прострочки окантовки?
         cant_color = data.get('25')
     else:
@@ -181,11 +181,11 @@ def format_new_doc(data):
     table = doc.add_table(rows=len(data['step2']) + 1, cols=5)
     table.style = 'Table Grid'
 
-    count = data.get('34')
-    price = data.get('35')
+    count = data.get('34', 0)
+    price = data.get('35', 0)
     total = round(float(price) * float(count))
     table_price += total
-    comment = data.get('41')
+    comment = data.get('41', '')
     row = ['Вышивка логотипа', comment, price, count, total]
     cells = table.rows[0].cells
     for i, cell in enumerate(cells):
@@ -271,6 +271,8 @@ def format_new_doc(data):
 
 if __name__ == '__main__':
     data = {'count': 48, 'step1': [['Комплект ковриков', 'Brilliance 12мм', 'Темно-серый', '1', '10000', ''], ['Водительский коврик', 'Brilliance 12мм', 'Темно-серый', '0.3', '10000', '']], 'step2': [['42342', '3', '234', 'Нет'], ['ываывап', '2343', '324', 'Нет']], 'step3': [['AgACAgIAAxkBAAJuOmbUMq3G23PxhF8uRIGZ7uaXY0xHAAJW4zEbDBGpSuNmKOD72aEuAQADAgADeQADNQQ', '234234']], '1': '124124', '2': 'Lifan', '3': 'Водительский коврик', '4': 'Brilliance 12мм', '5': 'Темно-серый', '6': '0.3', '7': '10000', '8': 'Нет', '9': 'Нет', '10': '2D', '11': '1', '12': '2000', '13': 'Нет', '14': 'Сплошной задний коврик', '15': '1', '16': '23412', '17': 'Нет', '18': 'Текстильный сменный', '19': '1', '20': '23412', '21': 'Нет', '22': 'Экокожи', '23': 'Темно-серый', '24': 'Двойная', '26': 'Коричневый', '27': 'Темно-серый', '28': 'Да', '29': 'Коричневый', '30': '23', '31': '1223', '32': 'Нет', '33': 'Да', '34': '3', '35': '344', '36': 'Нет', '37': 'Да', '38': 'ываывап', '39': '2343', '40': '324', '41': 'Нет', '42': 'Нет', '43': 'Да', '44': 'AgACAgIAAxkBAAJuOmbUMq3G23PxhF8uRIGZ7uaXY0xHAAJW4zEbDBGpSuNmKOD72aEuAQADAgADeQADNQQ', '45': '234234', '46': 'Нет', '47': '5'}
+    data = {'count': 48, 'step1': [['Водительский коврик', 'Brilliance 12мм', 'Темно-серый', '0.3', '10000', '']], 'step2': [],
+     'step3': [],  '1': '124', '2': 'Smart', '3': 'Водительский коврик', '4': 'Brilliance 12мм', '5': 'Темно-серый', '6': '0.3', '7': '10000', '8': 'Нет', '9': 'Нет', '10': 'Без язычка', '14': 'Без перемычки', '18': 'Без подпятника', '22': 'Текстильная', '23': 'Серый', '24': 'Одинарная', '25': 'Темно-серый', '28': 'Нет', '30': '0.3', '31': '2134', '32': 'Нет', '33': 'Нет', '37': 'Нет', '43': 'Нет', '47': '5'}
     format_new_doc(data)
     from docx2pdf import convert
 
