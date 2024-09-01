@@ -1,4 +1,6 @@
 import datetime
+import subprocess
+
 from docx import Document
 from docx.oxml import parse_xml
 from docx.oxml.ns import nsdecls
@@ -221,7 +223,4 @@ def format_new_doc(data):
 if __name__ == '__main__':
     data = {'count': 48, 'step1': [['Комплект ковриков', 'Brilliance 12мм', 'Темно-серый', '1', '10000', ''], ['Водительский коврик', 'Brilliance 12мм', 'Темно-серый', '0.3', '10000', '']], 'step2': [['42342', '3', '234', 'Нет'], ['ываывап', '2343', '324', 'Нет']], 'step3': [['AgACAgIAAxkBAAJuOmbUMq3G23PxhF8uRIGZ7uaXY0xHAAJW4zEbDBGpSuNmKOD72aEuAQADAgADeQADNQQ', '234234']], '1': '124124', '2': 'Lifan', '3': 'Водительский коврик', '4': 'Brilliance 12мм', '5': 'Темно-серый', '6': '0.3', '7': '10000', '8': 'Нет', '9': 'Нет', '10': '2D', '11': '1', '12': '2000', '13': 'Нет', '14': 'Сплошной задний коврик', '15': '1', '16': '23412', '17': 'Нет', '18': 'Текстильный сменный', '19': '1', '20': '23412', '21': 'Нет', '22': 'Экокожи', '23': 'Темно-серый', '24': 'Двойная', '26': 'Коричневый', '27': 'Темно-серый', '28': 'Да', '29': 'Коричневый', '30': '23', '31': '1223', '32': 'Нет', '33': 'Да', '34': '3', '35': '344', '36': 'Нет', '37': 'Да', '38': 'ываывап', '39': '2343', '40': '324', '41': 'Нет', '42': 'Нет', '43': 'Да', '44': 'AgACAgIAAxkBAAJuOmbUMq3G23PxhF8uRIGZ7uaXY0xHAAJW4zEbDBGpSuNmKOD72aEuAQADAgADeQADNQQ', '45': '234234', '46': 'Нет', '47': '5'}
     format_new_doc(data)
-    from docx2pdf import convert
-
-    convert("demo.docx")
-
+    subprocess.call("libreoffice --headless --convert-to pdf demo.docx", shell=True)
