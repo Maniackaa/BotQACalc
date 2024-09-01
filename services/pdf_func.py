@@ -2,7 +2,7 @@ import datetime
 from docx import Document
 from docx.oxml import parse_xml
 from docx.oxml.ns import nsdecls
-from docx.shared import Mm, Inches
+from docx.shared import Mm, Inches, Pt
 
 from config.bot_settings import settings, logger, BASE_DIR
 
@@ -47,6 +47,7 @@ def format_new_doc(data):
     total_price = 0
     table_price = 0
     table = doc.add_table(rows=len(data['step1']) + 1, cols=7)
+
     # table.style = style.name
     table.style = 'Table Grid'
     hdr_cells = table.rows[0].cells
@@ -72,13 +73,15 @@ def format_new_doc(data):
         for i, cell in enumerate(cells):
             cell.text = str(row[i])
     total_price += table_price
-
+    table.autofit = True
     doc.add_paragraph()
+    logger.debug(f'table 1: {table_price}. Total: {total_price}')
 
     # Детали конфигурации и опции ----------------------------------------------------------------------------
     header = ('Детали конфигурации и опции', '', '', '', '', '', '')
     table_price = 0
-    table = doc.add_table(rows=5, cols=7)
+    table = doc.add_table(rows=1, cols=1)
+
     # table.style = style.name
     table.style = 'Table Grid'
     hdr_cells = table.rows[0].cells
@@ -87,7 +90,8 @@ def format_new_doc(data):
         hdr_cells[i].text = header[i]
         cell_font = cell.paragraphs[0].runs[0]
         cell_font.bold = True
-
+    table = doc.add_table(rows=3, cols=7)
+    table.style = 'Table Grid'
     # Заполнение строк таблицы
     count = data.get('11')
     price = data.get('12')
@@ -95,7 +99,7 @@ def format_new_doc(data):
     table_price += total
     comment = data.get('13')
     row = ['Площадка левой ноги', data.get('10'), '', comment, price, count, total]
-    cells = table.rows[1].cells
+    cells = table.rows[0].cells
     for i, cell in enumerate(cells):
         cell.text = str(row[i])
 
@@ -105,7 +109,7 @@ def format_new_doc(data):
     table_price += total
     comment = data.get('17')
     row = ['Перемычка 2го ряда', data.get('14'), '', comment, price, count, total]
-    cells = table.rows[2].cells
+    cells = table.rows[1].cells
     for i, cell in enumerate(cells):
         cell.text = str(row[i])
 
@@ -115,30 +119,22 @@ def format_new_doc(data):
     table_price += total
     comment = data.get('21')
     row = ['Подпятник', data.get('18'), '', comment, price, count, total]
-    cells = table.rows[3].cells
+    cells = table.rows[2].cells
     for i, cell in enumerate(cells):
         cell.text = str(row[i])
-
-    # for row_num, step2 in enumerate(data['step2'], 1):
-    #     logger.debug(f'Ряд {row_num}, {step2}')
-    #     price = step2[4]
-    #     count = step2[3]  # Введите количество комплектов
-    #     total = round(float(price) * float(count))
-    #     table_price += total
-    #     logger.debug(f'price: {price}, count: {count}, total: {total}')
-    #     row = [step2[0], step2[1], step2[2], step2[5], price, count, total]
-    #     logger.debug(f'row: {row}')
-    #     cells = table.rows[row_num].cells
-    #     for i, cell in enumerate(cells):
-    #         cell.text = str(row[i])
+    table.autofit = True
 
     total_price += table_price
+    logger.debug(f'table 2: {table_price}. Total: {total_price}')
+
     doc.add_paragraph()
+
 
     # Окантовка ----------------------------------------------------------------------
     header = ('Окантовка', '', '', '', '', '', '')
     table_price = 0
-    table = doc.add_table(rows=5, cols=7)
+    table = doc.add_table(rows=3, cols=7)
+
     # table.style = style.name
     table.style = 'Table Grid'
     hdr_cells = table.rows[0].cells
@@ -167,13 +163,68 @@ def format_new_doc(data):
     for i, cell in enumerate(cells):
         cell.text = str(row[i])
     total_price += table_price
-
+    table.autofit = True
+    logger.debug(f'table 3: {table_price}. Total: {total_price}')
     doc.add_paragraph()
+
+    # Вышивки и другие опции ----------------------------------------------------------------------
+    header = ('Вышивки и другие опции', '', '', '', '', '', '')
+    table_price = 0
+    table = doc.add_table(rows=1, cols=1)
+    table.style = 'Table Grid'
+    hdr_cells = table.rows[0].cells
+    # Заголовок таблицы
+    for i, cell in enumerate(hdr_cells):
+        hdr_cells[i].text = header[i]
+        cell_font = cell.paragraphs[0].runs[0]
+        cell_font.bold = True
+    table = doc.add_table(rows=len(data['step2']) + 1, cols=5)
+    table.style = 'Table Grid'
+
+    count = data.get('34')
+    price = data.get('35')
+    total = round(float(price) * float(count))
+    table_price += total
+    comment = data.get('41')
+    row = ['Вышивка логотипа', comment, price, count, total]
+    cells = table.rows[0].cells
+    for i, cell in enumerate(cells):
+        cell.text = str(row[i])
+    
+    # Опции step2
+    logger.debug(f'steps2: {data["step2"]}')
+    for row_num, step2 in enumerate(data['step2'], 1):
+        logger.debug(f'Ряд {row_num}, {step2}')
+        price = step2[2]
+        count = step2[1]  # Введите количество комплектов
+        total = round(float(price) * float(count))
+        table_price += total
+        logger.debug(f'price: {price}, count: {count}, total: {total}')
+        row = [step2[0], step2[1], price, count, total]
+        logger.debug(f'row: {row}')
+        cells = table.rows[row_num].cells
+        for i, cell in enumerate(cells):
+            cell.text = str(row[i])
+    total_price += table_price
+    logger.debug(f'table 4: {table_price}. Total: {total_price}')
+    doc.add_paragraph()
+
+    # Фото
+    table = doc.add_table(rows=1, cols=1)
+    table.style = 'Table Grid'
+    cells = table.rows[0].cells
+    cells[0].text = 'Фото'
+    table = doc.add_table(rows=1, cols=5)
+    table.style = 'Table Grid'
+    for i in range(3):
+        table.rows[0].cells[i].add_paragraph().add_run().add_picture(f"photo{i}.jpg", width=Mm(35))
+    doc.add_paragraph()
+
     # Итого
     table = doc.add_table(rows=1, cols=3)
     table_price = 0
     table.style = 'Table Grid'
-    table.autofit = False
+    table.autofit = True
     page_width = int(doc.sections[0].page_width.mm) - int(doc.sections[0].left_margin.mm) - int(doc.sections[0].right_margin.mm) + 3
 
     row_cells = table.rows[0].cells
