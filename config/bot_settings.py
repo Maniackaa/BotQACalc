@@ -8,7 +8,7 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 from structlog.typing import WrappedLogger, EventDict
 
 BASE_DIR = Path(__file__).resolve().parent.parent
-
+print(BASE_DIR)
 
 class Settings(BaseSettings):
     BOT_TOKEN: str  # Токен для доступа к телеграм-боту
@@ -17,7 +17,6 @@ class Settings(BaseSettings):
     TIMEZONE: str = "Europe/Moscow"
     USE_REDIS: bool = False
     LOG_TO_FILE: bool = False
-    CHANNEL: int
 
     model_config = SettingsConfigDict(env_file=BASE_DIR / ".env")
 

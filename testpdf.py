@@ -23,10 +23,7 @@ section.right_margin = Mm(5)   # Правое поле
 doc.add_picture('header.png', width=Mm(200))
 styles = doc.styles
 data = {'count': 8, 'step1': [['Коврик в багажник', 'Luxury 20мм', 'Серый', 'коммент', 'Нет']], 'q_content_type':'text', '1': '1234124124', '2': 'JAC', '3': 'Коврик в багажник', '4': 'Luxury 20мм', '5': 'Серый', '6': 'коммент', '7': 'Нет'}
-for paragraph in doc.paragraphs:
-    if '{date}' in paragraph.text:
-        print(paragraph.text)
-        paragraph.text = paragraph.text.replace("{date}", "new_value")
+
 
 p = doc.add_paragraph().add_run(text=f'Дата: {datetime.datetime.now(tz=settings.tz).date()}')
 p.bold = True
@@ -40,10 +37,9 @@ p.bold = True
 header = ('Комплектация',	'Характеристики', 'Цвет',	'',	'Стоимость',	'Кол-во',	'Итого')
 
 for style in styles:
-    if style.type == style.type.TABLE:
-        doc.add_paragraph('-------------------')
+    if style.type == style.type.TABLE and style.name not in ['Normal Table']:
         doc.add_paragraph(style.name)
-        table = doc.add_table(rows=6, cols=7)
+        table = doc.add_table(rows=len(data['step1']) + 1, cols=7)
         table.style = style.name
         hdr_cells = table.rows[0].cells
         # Заголовок таблицы
@@ -67,11 +63,11 @@ for style in styles:
             for i, cell in enumerate(cells):
                 cell.text = str(row[i])
 
-        p = doc.add_paragraph('-------------------')
+        # p = doc.add_paragraph('-------------------')
 
-p.add_run('bold').bold = True
-p.add_run(' and some ')
-p.add_run('italic.').italic = True
+# p.add_run('bold').bold = True
+# p.add_run(' and some ')
+# p.add_run('italic.').italic = True
 
 
 # doc.add_picture('photo.jpg', width=Inches(6.25))

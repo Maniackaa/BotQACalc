@@ -33,7 +33,7 @@ async def channel_select(callback: CallbackQuery, widget: Select,
                          dialog_manager: DialogManager, item_id: str):
     data = dialog_manager.dialog_data
     data.update(channel_id=item_id)
-    await dialog_manager.start(NewDialog.question, data=data)
+    await dialog_manager.start(NewDialog.question, data=data, show_mode=ShowMode.DELETE_AND_SEND)
     # await dialog_manager.start(AddCarSG.photo, data=data)
 
 

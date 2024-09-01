@@ -31,8 +31,9 @@ async def make(callback: CallbackQuery, button: Button, dialog_manager: DialogMa
     doc = format_new_doc(data)
     # doc.add_page_break()
     doc.save(f'{callback.from_user.id}.docx')
-    convert(f'{callback.from_user.id}.docx', f'{callback.from_user.id}.pdf')
-    document = FSInputFile(filename=f'{callback.from_user.id}.pdf', path=f'{callback.from_user.id}.pdf')
+    # convert(f'{callback.from_user.id}.docx', f'{callback.from_user.id}.pdf')
+    # document = FSInputFile(filename=f'{callback.from_user.id}.pdf', path=f'{callback.from_user.id}.pdf')
+    document = FSInputFile(filename=f'demo.docx', path=f'demo.docx')
     await callback.message.answer_document(document=document)
     await dialog_manager.start(StartSG.start)
 
