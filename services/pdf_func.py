@@ -209,16 +209,16 @@ def format_new_doc(data):
     logger.debug(f'table 4: {table_price}. Total: {total_price}')
     doc.add_paragraph()
 
-    # Фото
-    table = doc.add_table(rows=1, cols=1)
-    table.style = 'Table Grid'
-    cells = table.rows[0].cells
-    cells[0].text = 'Фото'
-    table = doc.add_table(rows=1, cols=5)
-    table.style = 'Table Grid'
-    for i in range(3):
-        table.rows[0].cells[i].add_paragraph().add_run().add_picture(f"photo{i}.jpg", width=Mm(35))
-    doc.add_paragraph()
+    # # Фото
+    # table = doc.add_table(rows=1, cols=1)
+    # table.style = 'Table Grid'
+    # cells = table.rows[0].cells
+    # cells[0].text = 'Фото'
+    # table = doc.add_table(rows=1, cols=5)
+    # table.style = 'Table Grid'
+    # for i in range(3):
+    #     table.rows[0].cells[i].add_paragraph().add_run().add_picture(f"photo{i}.jpg", width=Mm(35))
+    # doc.add_paragraph()
 
     # Итого
     table = doc.add_table(rows=1, cols=3)
