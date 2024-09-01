@@ -40,6 +40,7 @@ def format_new_doc(data):
     p = doc.add_paragraph().add_run(text=f'Марка автомобиля: {data["2"]}')
     p.bold = True
 
+    # Коврики 3 - 9 -----------------------------------------------------------------------------
     header = ('Комплектация',	'Характеристики', 'Цвет',	'',	'Стоимость',	'Кол-во',	'Итого')
     # for style in styles:
     #     if style.type == style.type.TABLE and style.name not in ['Normal Table']:
@@ -75,6 +76,100 @@ def format_new_doc(data):
 
     doc.add_paragraph()
 
+    # Детали конфигурации и опции ----------------------------------------------------------------------------
+    header = ('Детали конфигурации и опции', '', '', '', '', '', '')
+    table_price = 0
+    table = doc.add_table(rows=5, cols=7)
+    # table.style = style.name
+    table.style = 'Table Grid'
+    hdr_cells = table.rows[0].cells
+    # Заголовок таблицы
+    for i, cell in enumerate(hdr_cells):
+        hdr_cells[i].text = header[i]
+        cell_font = cell.paragraphs[0].runs[0]
+        cell_font.bold = True
+
+    # Заполнение строк таблицы
+    count = data.get('11')
+    price = data.get('12')
+    total = round(float(price) * float(count))
+    table_price += total
+    comment = data.get('13')
+    row = ['Площадка левой ноги', data.get('10'), '', comment, price, count, total]
+    cells = table.rows[1].cells
+    for i, cell in enumerate(cells):
+        cell.text = str(row[i])
+
+    count = data.get('15')
+    price = data.get('16')
+    total = round(float(price) * float(count))
+    table_price += total
+    comment = data.get('17')
+    row = ['Перемычка 2го ряда', data.get('14'), '', comment, price, count, total]
+    cells = table.rows[2].cells
+    for i, cell in enumerate(cells):
+        cell.text = str(row[i])
+
+    count = data.get('19')
+    price = data.get('20')
+    total = round(float(price) * float(count))
+    table_price += total
+    comment = data.get('21')
+    row = ['Подпятник', data.get('18'), '', comment, price, count, total]
+    cells = table.rows[3].cells
+    for i, cell in enumerate(cells):
+        cell.text = str(row[i])
+
+    # for row_num, step2 in enumerate(data['step2'], 1):
+    #     logger.debug(f'Ряд {row_num}, {step2}')
+    #     price = step2[4]
+    #     count = step2[3]  # Введите количество комплектов
+    #     total = round(float(price) * float(count))
+    #     table_price += total
+    #     logger.debug(f'price: {price}, count: {count}, total: {total}')
+    #     row = [step2[0], step2[1], step2[2], step2[5], price, count, total]
+    #     logger.debug(f'row: {row}')
+    #     cells = table.rows[row_num].cells
+    #     for i, cell in enumerate(cells):
+    #         cell.text = str(row[i])
+
+    total_price += table_price
+    doc.add_paragraph()
+
+    # Окантовка ----------------------------------------------------------------------
+    header = ('Окантовка', '', '', '', '', '', '')
+    table_price = 0
+    table = doc.add_table(rows=5, cols=7)
+    # table.style = style.name
+    table.style = 'Table Grid'
+    hdr_cells = table.rows[0].cells
+    # Заголовок таблицы
+    for i, cell in enumerate(hdr_cells):
+        hdr_cells[i].text = header[i]
+        cell_font = cell.paragraphs[0].runs[0]
+        cell_font.bold = True
+
+    # Заполнение строк таблицы
+    count = data.get('30')
+    price = data.get('31')
+    total = round(float(price) * float(count))
+    table_price += total
+    comment = data.get('32')
+    if data.get('24') == 'Одинарная': #  Выберите тип прострочки окантовки?
+        cant_color = data.get('25')
+    else:
+        cant_color = f"{data.get('26')}, {data.get('26')}"
+    row = ['Тип окантовки', data.get('22'), data.get('23'), comment, price, count, total]
+    cells = table.rows[1].cells
+    for i, cell in enumerate(cells):
+        cell.text = str(row[i])
+    row = ['Строчка', data.get('24'), cant_color, '', '???', '????', '????']
+    cells = table.rows[2].cells
+    for i, cell in enumerate(cells):
+        cell.text = str(row[i])
+    total_price += table_price
+
+    doc.add_paragraph()
     # Итого
     table = doc.add_table(rows=1, cols=3)
     table_price = 0
@@ -102,6 +197,8 @@ def format_new_doc(data):
             cell._element.get_or_add_tcPr().append(parse_xml(r'<w:shd {} w:fill="00CA00"/>'.format(nsdecls('w'))))
         cell = table.cell(1, 1)
         cell.text = f'ИТОГО с учетом %'
+        cell = table.cell(1, 2)
+        cell.text = f'{round(total_price - total_price * float(data.get("47", 0)) / 100)}'
 
     # Устанавливаем ширину для последнего столбца
 
@@ -112,9 +209,9 @@ def format_new_doc(data):
     for row in table.rows:
         for idx, width in enumerate(widths):
             row.cells[idx].width = width
-    table.add_row()
-    table._tbl.remove(table.rows[1]._tr)
-    table._tbl.remove(table.rows[1]._tr)
+    # table.add_row()
+    # table._tbl.remove(table.rows[1]._tr)
+    # table._tbl.remove(table.rows[1]._tr)
     # doc.add_picture('photo.jpg', width=Inches(6.25))
     # doc.add_page_break()
 
@@ -123,7 +220,7 @@ def format_new_doc(data):
 
 
 if __name__ == '__main__':
-    data = {'count': 8, 'step1': [['Комплект ковриков', 'Platinum 10мм', 'Серый', '1', '20000', ''], ['Комплект ковриков', 'Platinum 10мм', 'Серый', '1', '20000', '']], 'q_content_type': 'text', '1': '09049ш0294', '2': 'Chrysler', '3': 'Комплект ковриков', '4': 'Platinum 10мм', '5': 'Серый', '6': '1', '7': '20000', '8': 'Нет', '9': 'Нет'}
+    data = {'count': 48, 'step1': [['Комплект ковриков', 'Brilliance 12мм', 'Темно-серый', '1', '10000', ''], ['Водительский коврик', 'Brilliance 12мм', 'Темно-серый', '0.3', '10000', '']], 'step2': [['42342', '3', '234', 'Нет'], ['ываывап', '2343', '324', 'Нет']], 'step3': [['AgACAgIAAxkBAAJuOmbUMq3G23PxhF8uRIGZ7uaXY0xHAAJW4zEbDBGpSuNmKOD72aEuAQADAgADeQADNQQ', '234234']], '1': '124124', '2': 'Lifan', '3': 'Водительский коврик', '4': 'Brilliance 12мм', '5': 'Темно-серый', '6': '0.3', '7': '10000', '8': 'Нет', '9': 'Нет', '10': '2D', '11': '1', '12': '2000', '13': 'Нет', '14': 'Сплошной задний коврик', '15': '1', '16': '23412', '17': 'Нет', '18': 'Текстильный сменный', '19': '1', '20': '23412', '21': 'Нет', '22': 'Экокожи', '23': 'Темно-серый', '24': 'Двойная', '26': 'Коричневый', '27': 'Темно-серый', '28': 'Да', '29': 'Коричневый', '30': '23', '31': '1223', '32': 'Нет', '33': 'Да', '34': '3', '35': '344', '36': 'Нет', '37': 'Да', '38': 'ываывап', '39': '2343', '40': '324', '41': 'Нет', '42': 'Нет', '43': 'Да', '44': 'AgACAgIAAxkBAAJuOmbUMq3G23PxhF8uRIGZ7uaXY0xHAAJW4zEbDBGpSuNmKOD72aEuAQADAgADeQADNQQ', '45': '234234', '46': 'Нет', '47': '5'}
     format_new_doc(data)
 
 
