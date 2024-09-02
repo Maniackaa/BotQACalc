@@ -1,9 +1,14 @@
 import datetime
 from docx import Document
 from docx.enum.table import WD_TABLE_ALIGNMENT
-from docx.oxml import parse_xml
+from docx.opc.oxml import qn
+from docx.oxml import parse_xml, OxmlElement
 from docx.oxml.ns import nsdecls
 from docx.shared import Mm, Inches, Pt
+
+from docx.oxml.shared import OxmlElement, qn
+from docxtpl import DocxTemplate, InlineImage, RichText
+from docx.oxml import parse_xml
 
 from config.bot_settings import settings, logger, BASE_DIR
 
@@ -246,7 +251,7 @@ def format_new_doc(data):
     # Итого
     table = doc.add_table(rows=1, cols=3)
     table_price = 0
-    table.style = 'Table Grid'
+    # table.style = 'Table Grid'
     table.autofit = True
     table.alignment = WD_TABLE_ALIGNMENT.LEFT
     # page_width = int(doc.sections[0].page_width.mm) - int(doc.sections[0].left_margin.mm) - int(doc.sections[0].right_margin.mm) + 3
@@ -266,9 +271,47 @@ def format_new_doc(data):
     cell = table.cell(0, 2)
     cell.text = f'{total_price}'
 
+    def set_cell_border(cell, **kwargs):
+        """
+        Set cell`s border
+        Usage:
+        set_cell_border(
+            cell,
+            top={"sz": 12, "val": "single", "color": "FF0000", "space": "0"},
+            bottom={"sz": 12, "color": "00FF00", "val": "single"},
+            left={"sz": 24, "val": "dashed", "shadow": "true"},
+            right={"sz": 12, "val": "dashed"},
+        )
+        """
+        tc = cell._tc
+        tcPr = tc.get_or_add_tcPr()
+
+        tcBorders = tcPr.first_child_found_in("w:tcBorders")
+        if tcBorders is None:
+            tcBorders = OxmlElement('w:tcBorders')
+            tcPr.append(tcBorders)
+
+        for edge in ('left', 'top', 'right', 'bottom', 'insideH', 'insideV'):
+            edge_data = kwargs.get(edge)
+            if edge_data:
+                tag = 'w:{}'.format(edge)
+
+                # check for tag existnace, if none found, then create one
+                element = tcBorders.find(qn(tag))
+                if element is None:
+                    element = OxmlElement(tag)
+                    tcBorders.append(element)
+
+                # looks like order of attributes is important
+                for key in ["sz", "val", "color", "space", "shadow"]:
+                    if key in edge_data:
+                        element.set(qn('w:{}'.format(key)), str(edge_data[key]))
+
+
     discount = float(data.get("47", 0))
     if discount:
         table.add_row()
+        table.style = 'Table Grid'
         table.alignment = WD_TABLE_ALIGNMENT.LEFT
         row_cells = table.rows[1].cells
         for i in range(1, 3):
@@ -279,8 +322,17 @@ def format_new_doc(data):
         cell = table.cell(1, 2)
         cell.text = f'{round(total_price - total_price * discount / 100)}'
     else:
-        t = table.add_row()
-        t.style = 'Normal Table'
+        row = table.add_row()
+        for i in range(3):
+            set_cell_border(table.cell(0, i),
+                            bottom={"sz": 6, "color": "#000000", "val": "single"},
+                            top={"sz": 6, "color": "#000000", "val": "single"},
+                            left={"sz": 6, "color": "#000000", "val": "single"},
+                            right={"sz": 6, "color": "#000000", "val": "single"},
+                            )
+        for row in table.rows:
+            for cell in row.cells:
+                pass
 
     # Устанавливаем ширину для последнего столбца
 
