@@ -40,14 +40,13 @@ def format_new_doc(data):
     p.bold = True
 
     # Коврики 3 - 9 -----------------------------------------------------------------------------
-    header = ('Комплекта-ция',	'Характерис-тики', 'Цвет',	'',	'Стоимость',	'Кол-во',	'Итого')
+    header = ('Комплекта-ция',	'Характерис-тики', 'Цвет',	'',	'Стои-мость',	'Кол-во',	'Итого')
     # for style in styles:
     #     if style.type == style.type.TABLE and style.name not in ['Normal Table']:
     # doc.add_paragraph().add_run(style.name)
     total_price = 0
     table_price = 0
-    table = doc.add_table(rows=1, cols=7)
-
+    table = doc.add_table(rows=len(data['step1']) + 1, cols=7)
     # table.style = style.name
     table.style = 'Table Grid'
     hdr_cells = table.rows[0].cells
@@ -57,15 +56,11 @@ def format_new_doc(data):
         cell_font = cell.paragraphs[0].runs[0]
         cell_font.bold = True
         # cell._element.get_or_add_tcPr().append(parse_xml(r'<w:shd {} w:fill="A9A9A9"/>'.format(nsdecls('w'))))
-    # table.autofit = True
-    # for row in table.rows:
-    #     for idx in range(4, 7):
-    #         row.cells[idx].width = Mm(20)
+
     # Заполнение строк таблицы
     logger.debug(f'steps1: {data["step1"]}')
-    table = doc.add_table(rows=len(data['step1']), cols=7)
     table.style = 'Table Grid'
-    for row_num, step1 in enumerate(data['step1'], 0):
+    for row_num, step1 in enumerate(data['step1'], 1):
         logger.debug(f'Ряд {row_num}, {step1}')
         price = step1[4]
         count = step1[3]  # Введите количество комплектов
@@ -85,17 +80,18 @@ def format_new_doc(data):
     # Детали конфигурации и опции ----------------------------------------------------------------------------
     header = ('Детали конфигурации и опции', '', '', '', '', '', '')
     table_price = 0
-    table = doc.add_table(rows=1, cols=1)
-
-    # table.style = style.name
+    table = doc.add_table(rows=4, cols=7)
     table.style = 'Table Grid'
     hdr_cells = table.rows[0].cells
+    cell_to_merge = table.cell(0, 0)
+    for i in range(1, 7):
+        cell_to_merge.merge(table.cell(0, i))
     # Заголовок таблицы
     for i, cell in enumerate(hdr_cells):
         hdr_cells[i].text = header[i]
         cell_font = cell.paragraphs[0].runs[0]
         cell_font.bold = True
-    table = doc.add_table(rows=3, cols=7)
+
     table.style = 'Table Grid'
     # Заполнение строк таблицы
     count = data.get('11', 0)
@@ -104,7 +100,7 @@ def format_new_doc(data):
     table_price += total
     comment = data.get('13', '')
     row = ['Площадка левой ноги', data.get('10'), '', comment, price, count, total]
-    cells = table.rows[0].cells
+    cells = table.rows[1].cells
     for i, cell in enumerate(cells):
         cell.text = str(row[i])
 
@@ -114,7 +110,7 @@ def format_new_doc(data):
     table_price += total
     comment = data.get('17', '')
     row = ['Перемычка 2го ряда', data.get('14'), '', comment, price, count, total]
-    cells = table.rows[1].cells
+    cells = table.rows[2].cells
     for i, cell in enumerate(cells):
         cell.text = str(row[i])
 
@@ -124,7 +120,7 @@ def format_new_doc(data):
     table_price += total
     comment = data.get('21', '')
     row = ['Подпятник', data.get('18'), '', comment, price, count, total]
-    cells = table.rows[2].cells
+    cells = table.rows[3].cells
     for i, cell in enumerate(cells):
         cell.text = str(row[i])
     table.autofit = True
@@ -138,19 +134,19 @@ def format_new_doc(data):
     # Окантовка ----------------------------------------------------------------------
     header = ('Окантовка', '', '', '', '', '', '')
     table_price = 0
-    table = doc.add_table(rows=1, cols=1)
+    table = doc.add_table(rows=3, cols=7)
     # table.style = style.name
     table.style = 'Table Grid'
-    hdr_cells = table.rows[0].cells
+    cell_to_merge = table.cell(0, 0)
+    for i in range(1, 7):
+        cell_to_merge.merge(table.cell(0, i))
     # Заголовок таблицы
-    for i, cell in enumerate(hdr_cells):
-        hdr_cells[i].text = header[i]
-        cell_font = cell.paragraphs[0].runs[0]
-        cell_font.bold = True
+    hdr_cells = table.rows[0].cells
+    hdr_cells[0].text = 'Окантовка'
+    cell_font = hdr_cells[0].paragraphs[0].runs[0]
+    cell_font.bold = True
 
     # Заполнение строк таблицы
-    table = doc.add_table(rows=2, cols=7)
-    table.style = 'Table Grid'
     count = data.get('30')
     price = data.get('31')
     total = round(float(price) * float(count))
@@ -161,11 +157,11 @@ def format_new_doc(data):
     else:
         cant_color = f"{data.get('26')}, {data.get('26')}"
     row = ['Тип окантовки', data.get('22'), data.get('23'), comment, price, count, total]
-    cells = table.rows[0].cells
+    cells = table.rows[1].cells
     for i, cell in enumerate(cells):
         cell.text = str(row[i])
     row = ['Строчка', data.get('24'), cant_color, '', '', '', '']
-    cells = table.rows[1].cells
+    cells = table.rows[2].cells
     for i, cell in enumerate(cells):
         cell.text = str(row[i])
     total_price += table_price
@@ -174,17 +170,20 @@ def format_new_doc(data):
     doc.add_paragraph()
 
     # Вышивки и другие опции ----------------------------------------------------------------------
-    header = ('Вышивки и другие опции', '', '', '', '', '', '')
+    header = ('Вышивки и другие опции', '', '', '', '')
     table_price = 0
-    table = doc.add_table(rows=1, cols=1)
+    table = doc.add_table(rows=len(data['step2']) + 2, cols=5)
     table.style = 'Table Grid'
     hdr_cells = table.rows[0].cells
     # Заголовок таблицы
+    cell_to_merge = table.cell(0, 0)
+    for i in range(1, 5):
+        cell_to_merge.merge(table.cell(0, i))
     for i, cell in enumerate(hdr_cells):
         hdr_cells[i].text = header[i]
         cell_font = cell.paragraphs[0].runs[0]
         cell_font.bold = True
-    table = doc.add_table(rows=len(data['step2']) + 1, cols=5)
+    # table = doc.add_table(rows=len(data['step2']) + 1, cols=5)
     table.style = 'Table Grid'
 
     count = data.get('34', 0)
@@ -193,7 +192,7 @@ def format_new_doc(data):
     table_price += total
     comment = data.get('41', '')
     row = ['Вышивка логотипа', comment, price, count, total]
-    cells = table.rows[0].cells
+    cells = table.rows[1].cells
     for i, cell in enumerate(cells):
         cell.text = str(row[i])
     
@@ -216,17 +215,26 @@ def format_new_doc(data):
     doc.add_paragraph()
 
     # Фото
-    table = doc.add_table(rows=1, cols=1)
+    table = doc.add_table(rows=3, cols=5)
+    hdr_cells = table.rows[0].cells
+    # Заголовок таблицы
+    cell_to_merge = table.cell(0, 0)
+    for i in range(1, 5):
+        cell_to_merge.merge(table.cell(0, i))
+    for i, cell in enumerate(hdr_cells):
+        hdr_cells[i].text = header[i]
+        cell_font = cell.paragraphs[0].runs[0]
+        cell_font.bold = True
     table.style = 'Table Grid'
     cells = table.rows[0].cells
     cells[0].text = 'Фото'
-    table = doc.add_table(rows=2, cols=5)
+    # table = doc.add_table(rows=2, cols=5)
     table.style = 'Table Grid'
     step3 = data['step3']
     order_id = data['order_id']
     for i, photo_pair in enumerate(step3):
-        table.rows[0].cells[i].add_paragraph().add_run().add_picture(f"photo_{order_id}_{i}.jpg", width=Mm(35))
-        table.rows[1].cells[i].text = photo_pair[1]
+        table.rows[1].cells[i].add_paragraph().add_run().add_picture(f"photo_{order_id}_{i}.jpg", width=Mm(35))
+        table.rows[2].cells[i].text = photo_pair[1]
     doc.add_paragraph()
 
     # Итого
@@ -271,11 +279,16 @@ def format_new_doc(data):
     for row in table.rows:
         for idx, width in enumerate(widths):
             row.cells[idx].width = width
-    # table.add_row()
-    # table._tbl.remove(table.rows[1]._tr)
-    # table._tbl.remove(table.rows[1]._tr)
-    # doc.add_picture('photo.jpg', width=Inches(6.25))
-    # doc.add_page_break()
+
+    # tables = doc.tables
+    # for table in tables:
+    #     rows = table.rows
+    #     for i, row in enumerate(rows):
+    #         cells = row.cells
+    #         for n in range(-1, -4, -1):
+    #             cell = cells[n]
+    #             cell.width = Mm(20)
+    #     table.autofit = True
 
     doc.save('demo.docx')
     return doc
