@@ -38,6 +38,7 @@ def format_new_doc(data):
     # doc.add_paragraph()
     p = doc.add_paragraph().add_run(text=f'Марка автомобиля: {data["2"]}')
     p.bold = True
+    p.font.size = Pt(20)
 
     # Коврики 3 - 9 -----------------------------------------------------------------------------
     header = ('Комплекта-ция',	'Характерис-тики', 'Цвет',	'',	'Стои-мость',	'Кол-во',	'Итого')
@@ -99,6 +100,7 @@ def format_new_doc(data):
     total = round(float(price) * float(count))
     table_price += total
     comment = data.get('13', '')
+    comment = '' if comment == 'Нет' else comment
     row = ['Площадка левой ноги', data.get('10'), '', comment, price, count, total]
     cells = table.rows[1].cells
     for i, cell in enumerate(cells):
@@ -109,6 +111,7 @@ def format_new_doc(data):
     total = round(float(price) * float(count))
     table_price += total
     comment = data.get('17', '')
+    comment = '' if comment == 'Нет' else comment
     row = ['Перемычка 2го ряда', data.get('14'), '', comment, price, count, total]
     cells = table.rows[2].cells
     for i, cell in enumerate(cells):
@@ -119,6 +122,7 @@ def format_new_doc(data):
     total = round(float(price) * float(count))
     table_price += total
     comment = data.get('21', '')
+    comment = '' if comment == 'Нет' else comment
     row = ['Подпятник', data.get('18'), '', comment, price, count, total]
     cells = table.rows[3].cells
     for i, cell in enumerate(cells):
@@ -152,6 +156,7 @@ def format_new_doc(data):
     total = round(float(price) * float(count))
     table_price += total
     comment = data.get('32', '')
+    comment = '' if comment == 'Нет' else comment
     if data.get('24') == 'Одинарная': #  Выберите тип прострочки окантовки?
         cant_color = data.get('25')
     else:
@@ -191,6 +196,7 @@ def format_new_doc(data):
     total = round(float(price) * float(count))
     table_price += total
     comment = data.get('41', '')
+    comment = '' if comment == 'Нет' else comment
     row = ['Вышивка логотипа', comment, price, count, total]
     cells = table.rows[1].cells
     for i, cell in enumerate(cells):
@@ -233,7 +239,7 @@ def format_new_doc(data):
     step3 = data['step3']
     order_id = data['order_id']
     for i, photo_pair in enumerate(step3):
-        table.rows[1].cells[i].add_paragraph().add_run().add_picture(f"photo_{order_id}_{i}.jpg", width=Mm(35))
+        table.rows[1].cells[i].paragraphs[0].add_run().add_picture(f"photo_{order_id}_{i}.jpg", width=Mm(35))
         table.rows[2].cells[i].text = photo_pair[1]
     doc.add_paragraph()
 
@@ -254,10 +260,13 @@ def format_new_doc(data):
     cell_to_merge = table.cell(0, 0)
     cell_to_merge.merge(table.cell(0, 1))
     cell_to_merge.text = 'ИТОГО'
+    p = cell_to_merge.paragraphs[0].runs[0]
+    p.font.size = Pt(16)
+    p.bold = True
     cell = table.cell(0, 2)
     cell.text = f'{total_price}'
 
-    discount = True
+    discount = float(data.get("47", 0))
     if discount:
         table.add_row()
         table.alignment = WD_TABLE_ALIGNMENT.LEFT
@@ -268,7 +277,10 @@ def format_new_doc(data):
         cell = table.cell(1, 1)
         cell.text = f'ИТОГО с учетом %'
         cell = table.cell(1, 2)
-        cell.text = f'{round(total_price - total_price * float(data.get("47", 0)) / 100)}'
+        cell.text = f'{round(total_price - total_price * discount / 100)}'
+    else:
+        t = table.add_row()
+        t.style = 'Normal Table'
 
     # Устанавливаем ширину для последнего столбца
 
@@ -280,7 +292,7 @@ def format_new_doc(data):
         for idx, width in enumerate(widths):
             row.cells[idx].width = width
 
-    # tables = doc.tables
+    # tables = doc.tables[:-2]
     # for table in tables:
     #     rows = table.rows
     #     for i, row in enumerate(rows):
