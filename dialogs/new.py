@@ -37,6 +37,7 @@ async def getter(dialog_manager: DialogManager, event_from_user: User, bot: Bot,
     data['step1'] = data.get('step1', [])
     data['step2'] = data.get('step2', [])
     data['step3'] = data.get('step3', [])
+    data['order_id'] = 1
 
     question = questions[count]['q']
     answers = questions[count].get('a', [])
@@ -216,7 +217,8 @@ async def message_handler(
     elif message.content_type == ContentType.PHOTO:
         logger.debug('Фото')
         data[field] = message.photo[-1].file_id
-        file_path = f'{message.from_user.id}_photo_{count}.jpg'
+        order_id = data['order_id']
+        file_path = f'photo_{order_id}_{len(data["step3"])}.jpg'
         await message.bot.download(file=message.photo[-1], destination=file_path)
     await next_q(dialog_manager)
     return
