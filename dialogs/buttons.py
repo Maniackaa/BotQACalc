@@ -1,4 +1,5 @@
 import datetime
+import subprocess
 
 import aiogram.types
 from aiogram.enums import ContentType
@@ -33,8 +34,12 @@ async def make(callback: CallbackQuery, button: Button, dialog_manager: DialogMa
     doc.save(f'{callback.from_user.id}.docx')
     # convert(f'{callback.from_user.id}.docx', f'{callback.from_user.id}.pdf')
     # document = FSInputFile(filename=f'{callback.from_user.id}.pdf', path=f'{callback.from_user.id}.pdf')
-    document = FSInputFile(filename=f'demo.docx', path=f'demo.docx')
-    await callback.message.answer_document(document=document)
+
+    process = subprocess.Popen(['abiword', '--to=pdf', 'demo.docx'])
+    exit_codes = process.wait()
+    print(exit_codes)
+    document2 = FSInputFile(filename=f'demo.pdf', path=f'demo.pdf')
+    await callback.message.answer_document(document=document2)
     await dialog_manager.start(StartSG.start)
 
 
